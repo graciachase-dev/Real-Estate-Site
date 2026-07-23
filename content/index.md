@@ -371,12 +371,17 @@ cssclasses:
     progress.style.width = pct + "%";
   }
 
-  // Hero parallax (skipped for reduced-motion visitors)
+  // Hero parallax — image and text move at different rates so the
+  // scene reads as layered/three-dimensional rather than a flat scroll.
   var heroImg = hero ? hero.querySelector(".ll-hero__placeholder img") : null;
+  var heroContent = hero ? hero.querySelector(".ll-hero__content") : null;
+  var heroCue = hero ? hero.querySelector(".ll-hero__scroll-cue") : null;
   function updateParallax() {
-    if (!heroImg || reducedMotion) return;
-    var offset = Math.min(window.scrollY * 0.3, 160);
-    heroImg.style.transform = "translateY(" + offset + "px)";
+    if (reducedMotion) return;
+    var y = window.scrollY;
+    if (heroImg) heroImg.style.transform = "translateY(" + Math.min(y * 0.3, 160) + "px)";
+    if (heroContent) heroContent.style.transform = "translateY(" + Math.min(y * 0.14, 70) + "px)";
+    if (heroCue) heroCue.style.opacity = Math.max(1 - y / 220, 0);
   }
 
   var ticking = false;
@@ -432,6 +437,52 @@ cssclasses:
     document.addEventListener("mouseout", function (e) {
       if (e.target.closest(hoverTargets)) cursor.classList.remove("is-hover");
     });
+  }
+
+  // 3D tilt on gallery photos + feature cards — subtle depth that follows
+  // the cursor. Fine-pointer devices only; inline transform overrides the
+  // plain CSS hover lift while active, and clears back to it on mouseleave.
+  function enableTilt(selector, maxTilt, lift) {
+    document.querySelectorAll(selector).forEach(function (el) {
+      el.addEventListener("mousemove", function (e) {
+        var rect = el.getBoundingClientRect();
+        var px = (e.clientX - rect.left) / rect.width - 0.5;
+        var py = (e.clientY - rect.top) / rect.height - 0.5;
+        el.style.transform =
+          "perspective(800px) rotateX(" + (-py * maxTilt) + "deg) rotateY(" +
+          (px * maxTilt) + "deg) translateY(-" + lift + "px) scale(1.02)";
+      });
+      el.addEventListener("mouseleave", function () {
+        el.style.transform = "";
+      });
+    });
+  }
+  if (window.matchMedia("(pointer: fine)").matches && !reducedMotion) {
+    enableTilt(".ll-photo", 9, 4);
+    enableTilt(".ll-feature", 5, 2);
+  }
+
+  // Magnetic pull on the primary CTA button
+  if (window.matchMedia("(pointer: fine)").matches && !reducedMotion) {
+    var magneticBtn = document.querySelector(".ll-btn");
+    if (magneticBtn) {
+      document.addEventListener("mousemove", function (e) {
+        var rect = magneticBtn.getBoundingClientRect();
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+        var dx = e.clientX - cx;
+        var dy = e.clientY - cy;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        var radius = 90;
+        if (dist < radius) {
+          var pull = (1 - dist / radius) * 0.5;
+          magneticBtn.style.transform =
+            "translate(" + (dx * pull) + "px, " + (dy * pull - 2) + "px)";
+        } else {
+          magneticBtn.style.transform = "";
+        }
+      });
+    }
   }
 
   // Scroll-triggered fade/slide reveal
