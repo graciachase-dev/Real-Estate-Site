@@ -1,6 +1,6 @@
 ---
-title: "[ADDRESS]"
-description: "A rare offering at [ADDRESS] — [BEDS] beds, [BATHS] baths, [SQFT] sq ft, offered at [PRICE]."
+title: "1021 Alegre Ave, Los Altos, CA 94024"
+description: "A rare offering at 1021 Alegre Ave, Los Altos, CA 94024 — 3 beds, 3 baths, 3,191 sq ft, offered at [PRICE]."
 cssclasses:
   - luxury-listing
 ---
@@ -31,7 +31,7 @@ cssclasses:
 -->
 
 <nav id="site-nav" class="ll-nav">
-  <a href="#hero" class="ll-nav__brand">[ADDRESS]</a>
+  <a href="#hero" class="ll-nav__brand">1021 Alegre Ave</a>
   <button id="navToggle" class="ll-nav__toggle" aria-label="Toggle navigation" aria-expanded="false">
     <span></span><span></span><span></span>
   </button>
@@ -46,13 +46,13 @@ cssclasses:
 
 <section id="hero" class="ll-hero reveal">
   <div class="ll-hero__placeholder">
-    <img src="images/hero-exterior.webp" alt="[ADDRESS] — exterior" loading="eager" />
+    <img src="images/hero-exterior.webp" alt="1021 Alegre Ave, Los Altos, CA 94024 — exterior" loading="eager" />
   </div>
   <div class="ll-hero__scrim"></div>
   <div class="ll-hero__content">
     <p class="ll-hero__eyebrow">Offered at [PRICE]</p>
-    <h1 class="ll-hero__title">[ADDRESS]</h1>
-    <p class="ll-hero__subtitle">[BEDS] Beds &nbsp;·&nbsp; [BATHS] Baths &nbsp;·&nbsp; [SQFT] Sq Ft</p>
+    <h1 class="ll-hero__title">1021 Alegre Ave</h1>
+    <p class="ll-hero__subtitle">3 Beds &nbsp;·&nbsp; 3 Baths &nbsp;·&nbsp; 3,191 Sq Ft</p>
   </div>
   <a href="#overview" class="ll-hero__scroll-cue" aria-label="Scroll to explore">
     <span>Scroll to Explore</span>
@@ -68,15 +68,15 @@ cssclasses:
         <span class="ll-stat__label">Asking Price</span>
       </div>
       <div class="ll-stat">
-        <span class="ll-stat__value">[BEDS]</span>
+        <span class="ll-stat__value">3</span>
         <span class="ll-stat__label">Bedrooms</span>
       </div>
       <div class="ll-stat">
-        <span class="ll-stat__value">[BATHS]</span>
+        <span class="ll-stat__value">3</span>
         <span class="ll-stat__label">Bathrooms</span>
       </div>
       <div class="ll-stat">
-        <span class="ll-stat__value">[SQFT]</span>
+        <span class="ll-stat__value">3,191</span>
         <span class="ll-stat__label">Square Feet</span>
       </div>
       <div class="ll-stat">
@@ -264,7 +264,7 @@ cssclasses:
       <!-- Swap: replace the q= value with the real property address, keep &output=embed (no API key required) -->
       <div class="ll-location__map">
         <iframe
-          src="https://www.google.com/maps?q=[ADDRESS]&output=embed"
+          src="https://www.google.com/maps?q=1021+Alegre+Ave,+Los+Altos,+CA+94024&output=embed"
           width="100%"
           height="420"
           style="border:0"
@@ -316,7 +316,7 @@ cssclasses:
         </label>
         <label>
           Message
-          <textarea name="message" rows="4" placeholder="I'd like to schedule a private showing of [ADDRESS]."></textarea>
+          <textarea name="message" rows="4" placeholder="I'd like to schedule a private showing of 1021 Alegre Ave."></textarea>
         </label>
         <button type="submit" class="ll-btn">Request a Private Showing</button>
         <p class="ll-form__fallback">Prefer email? Reach us directly at <a href="mailto:[EMAIL]">[EMAIL]</a>.</p>
