@@ -22,6 +22,66 @@ html:has(article.luxury-listing)[saved-theme="dark"] {
 // Quartz pages if you add any later.
 // ============================================================
 
+html:has(article.luxury-listing) {
+  scroll-behavior: smooth;
+
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
+  }
+}
+
+// Thin gold progress bar showing scroll position (appended to <body> by script)
+.ll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, #b08d57, #8a7a5c);
+  z-index: 200;
+  transition: width 0.1s linear;
+}
+
+// Minimal custom cursor — desktop pointer devices only, expands over
+// interactive elements. Disabled automatically on touch devices and
+// when the visitor prefers reduced motion (see script for the JS side).
+.ll-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #b08d57;
+  pointer-events: none;
+  z-index: 300;
+  transform: translate(-50%, -50%);
+  transition:
+    width 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.25s ease,
+    background 0.25s ease;
+  opacity: 0;
+  mix-blend-mode: exclusion;
+
+  &.is-active {
+    opacity: 1;
+  }
+  &.is-hover {
+    width: 40px;
+    height: 40px;
+    background: #f3e5c3;
+  }
+}
+body.ll-cursor-on {
+  cursor: none;
+
+  a,
+  button {
+    cursor: none;
+  }
+}
+
 body:has(article.luxury-listing) {
   // Strip Quartz's default wiki chrome/spacing so the brochure
   // page can render truly full-bleed edge to edge.
@@ -97,6 +157,7 @@ article.luxury-listing {
   }
   .ll-section {
     padding: 6rem 0;
+    scroll-margin-top: 88px;
     @media #{$mobile} {
       padding: 3.5rem 0;
     }
@@ -128,8 +189,8 @@ article.luxury-listing {
     opacity: 0;
     transform: translateY(24px);
     transition:
-      opacity 0.8s ease,
-      transform 0.8s ease;
+      opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .reveal.is-visible {
     opacity: 1;
@@ -192,11 +253,26 @@ article.luxury-listing {
     text-transform: uppercase;
 
     a {
+      position: relative;
       opacity: 0.9;
       transition: opacity 0.2s ease;
+
+      &::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 100%;
+        bottom: -5px;
+        height: 1px;
+        background: currentColor;
+        transition: right 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      }
       &:hover {
         opacity: 1;
         color: var(--ll-gold);
+        &::after {
+          right: 0;
+        }
       }
     }
 
@@ -265,10 +341,15 @@ article.luxury-listing {
 
       img {
         width: 100%;
-        height: 100%;
+        height: 110%;
         object-fit: cover;
         object-position: center;
         display: block;
+        will-change: transform;
+
+        @media (prefers-reduced-motion: reduce) {
+          transform: none !important;
+        }
       }
     }
     .ll-hero__scrim {
@@ -293,24 +374,40 @@ article.luxury-listing {
         padding: 0 1.5rem 5.5rem;
       }
     }
+    .ll-hero__eyebrow,
+    .ll-hero__title,
+    .ll-hero__subtitle {
+      opacity: 0;
+      transform: translateY(18px);
+      animation: ll-hero-in 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+
+      @media (prefers-reduced-motion: reduce) {
+        opacity: 1;
+        transform: none;
+        animation: none;
+      }
+    }
     .ll-hero__eyebrow {
       text-transform: uppercase;
       letter-spacing: 0.18em;
       font-size: 0.8rem;
       margin: 0 0 1rem;
       color: #f0e6d2;
+      animation-delay: 0.3s;
     }
     .ll-hero__title {
       font-size: clamp(2.2rem, 5vw, 4rem);
       margin: 0 0 1rem;
       font-weight: 500;
       color: #fff;
+      animation-delay: 0.5s;
     }
     .ll-hero__subtitle {
       font-size: 1.05rem;
       letter-spacing: 0.03em;
       margin: 0;
       color: #f0e6d2;
+      animation-delay: 0.7s;
     }
     .ll-hero__scroll-cue {
       position: absolute;
@@ -326,7 +423,15 @@ article.luxury-listing {
       font-size: 0.7rem;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      animation: ll-bounce 2.2s ease-in-out infinite;
+      opacity: 0;
+      animation:
+        ll-hero-in 1s cubic-bezier(0.22, 1, 0.36, 1) forwards 1.1s,
+        ll-bounce 2.2s ease-in-out infinite 2.1s;
+
+      @media (prefers-reduced-motion: reduce) {
+        opacity: 1;
+        animation: none;
+      }
 
       svg {
         width: 18px;
@@ -344,6 +449,12 @@ article.luxury-listing {
     }
     50% {
       transform: translate(-50%, 8px);
+    }
+  }
+  @keyframes ll-hero-in {
+    to {
+      opacity: 1;
+      transform: none;
     }
   }
 
@@ -382,15 +493,24 @@ article.luxury-listing {
   }
   button.photo-placeholder {
     appearance: none;
+    overflow: hidden;
     transition:
-      transform 0.3s ease,
-      box-shadow 0.3s ease,
-      border-color 0.3s ease;
+      transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.4s ease;
+
+    img {
+      transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
 
     &:hover {
       transform: translateY(-3px);
       border-color: var(--ll-gold);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.1);
+
+      img {
+        transform: scale(1.07);
+      }
     }
   }
 
@@ -660,13 +780,17 @@ article.luxury-listing {
     letter-spacing: 0.1em;
     cursor: pointer;
     transition:
-      background 0.25s ease,
-      color 0.25s ease;
+      background 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+      color 0.3s ease,
+      transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.3s ease;
 
     &:hover {
       background: var(--ll-gold);
       border-color: var(--ll-gold);
       color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(176, 141, 87, 0.35);
     }
   }
   .ll-form__fallback {
@@ -728,14 +852,27 @@ article.luxury-listing {
   justify-content: center;
   background: rgba(20, 17, 14, 0.92);
   padding: 3rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 
   &.is-open {
     display: flex;
+  }
+  &.is-visible {
+    opacity: 1;
   }
 
   .ll-lightbox__inner {
     width: min(700px, 100%);
     aspect-ratio: 4 / 3;
+    transform: scale(0.96);
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
     .photo-placeholder {
       height: 100%;
@@ -747,6 +884,9 @@ article.luxury-listing {
         stroke: #f0e6d2;
       }
     }
+  }
+  &.is-visible .ll-lightbox__inner {
+    transform: scale(1);
   }
 
   .ll-lightbox__close {
@@ -765,5 +905,54 @@ article.luxury-listing {
     &:hover {
       opacity: 1;
     }
+  }
+
+  .ll-lightbox__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #fff;
+    opacity: 0.75;
+    cursor: pointer;
+    padding: 0.75rem;
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
+
+    svg {
+      width: 26px;
+      height: 26px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.5;
+    }
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+  .ll-lightbox__prev {
+    left: 1rem;
+    &:hover {
+      transform: translateY(-50%) translateX(-3px);
+    }
+  }
+  .ll-lightbox__next {
+    right: 1rem;
+    &:hover {
+      transform: translateY(-50%) translateX(3px);
+    }
+  }
+
+  .ll-lightbox__counter {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
   }
 }

@@ -345,6 +345,8 @@ cssclasses:
 
 <script>
 (function () {
+  var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   // Sticky nav: transparent over hero, solid once scrolled
   var nav = document.getElementById("site-nav");
   var hero = document.getElementById("hero");
@@ -357,8 +359,39 @@ cssclasses:
       nav.classList.remove("is-solid");
     }
   }
-  document.addEventListener("scroll", updateNav, { passive: true });
-  updateNav();
+
+  // Scroll progress bar
+  var progress = document.createElement("div");
+  progress.className = "ll-progress";
+  document.body.appendChild(progress);
+  function updateProgress() {
+    var doc = document.documentElement;
+    var scrollable = doc.scrollHeight - doc.clientHeight;
+    var pct = scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0;
+    progress.style.width = pct + "%";
+  }
+
+  // Hero parallax (skipped for reduced-motion visitors)
+  var heroImg = hero ? hero.querySelector(".ll-hero__placeholder img") : null;
+  function updateParallax() {
+    if (!heroImg || reducedMotion) return;
+    var offset = Math.min(window.scrollY * 0.3, 160);
+    heroImg.style.transform = "translateY(" + offset + "px)";
+  }
+
+  var ticking = false;
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () {
+      updateNav();
+      updateProgress();
+      updateParallax();
+      ticking = false;
+    });
+  }
+  document.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
 
   // Mobile nav toggle
   var toggle = document.getElementById("navToggle");
@@ -373,6 +406,31 @@ cssclasses:
         links.classList.remove("is-open");
         toggle.setAttribute("aria-expanded", "false");
       });
+    });
+  }
+
+  // Custom cursor — fine-pointer desktop devices only
+  if (window.matchMedia("(pointer: fine)").matches && !reducedMotion) {
+    var cursor = document.createElement("div");
+    cursor.className = "ll-cursor";
+    document.body.appendChild(cursor);
+    document.body.classList.add("ll-cursor-on");
+
+    document.addEventListener("mousemove", function (e) {
+      cursor.style.left = e.clientX + "px";
+      cursor.style.top = e.clientY + "px";
+      cursor.classList.add("is-active");
+    });
+    document.addEventListener("mouseleave", function () {
+      cursor.classList.remove("is-active");
+    });
+
+    var hoverTargets = "a, button, .ll-photo, input, textarea";
+    document.addEventListener("mouseover", function (e) {
+      if (e.target.closest(hoverTargets)) cursor.classList.add("is-hover");
+    });
+    document.addEventListener("mouseout", function (e) {
+      if (e.target.closest(hoverTargets)) cursor.classList.remove("is-hover");
     });
   }
 
@@ -395,34 +453,119 @@ cssclasses:
     revealEls.forEach(function (el) { el.classList.add("is-visible"); });
   }
 
-  // Lightbox for gallery + floor plan + hero placeholders
+  // Animated counting stat numbers — only runs when the value is numeric
+  // (e.g. "$4,850,000", "5", "1.2 acres"); bracket placeholders like
+  // "[PRICE]" are left alone and just fade in via .reveal above.
+  var statEls = document.querySelectorAll(".ll-stat__value");
+  if ("IntersectionObserver" in window && !reducedMotion) {
+    var statObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            animateStat(entry.target);
+            statObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+    statEls.forEach(function (el) { statObserver.observe(el); });
+  }
+
+  function animateStat(el) {
+    var raw = el.textContent.trim();
+    var match = raw.match(/^([^\d]*)([\d,]*\.?\d+)(.*)$/);
+    if (!match) return; // not numeric (e.g. "[PRICE]") — leave as-is
+
+    var prefix = match[1];
+    var numStr = match[2];
+    var suffix = match[3];
+    var hasComma = numStr.indexOf(",") !== -1;
+    var decimals = numStr.indexOf(".") !== -1 ? numStr.split(".")[1].length : 0;
+    var target = parseFloat(numStr.replace(/,/g, ""));
+    if (isNaN(target)) return;
+
+    var duration = 1400;
+    var start = null;
+
+    function formatNumber(n) {
+      var fixed = n.toFixed(decimals);
+      if (!hasComma) return fixed;
+      var parts = fixed.split(".");
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return parts.join(".");
+    }
+
+    function step(ts) {
+      if (start === null) start = ts;
+      var progress = Math.min((ts - start) / duration, 1);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = prefix + formatNumber(target * eased) + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  // Lightbox for gallery photos — supports prev/next + keyboard navigation
+  var photoEls = Array.prototype.slice.call(document.querySelectorAll(".ll-photo"));
+  var currentIndex = -1;
+
   var lightbox = document.createElement("div");
   lightbox.className = "ll-lightbox";
   lightbox.innerHTML =
     '<button class="ll-lightbox__close" aria-label="Close">&times;</button>' +
-    '<div class="ll-lightbox__inner"></div>';
+    '<button class="ll-lightbox__nav ll-lightbox__prev" aria-label="Previous photo"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
+    '<div class="ll-lightbox__inner"></div>' +
+    '<button class="ll-lightbox__nav ll-lightbox__next" aria-label="Next photo"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>' +
+    '<div class="ll-lightbox__counter"></div>';
   document.body.appendChild(lightbox);
 
-  function openLightbox(sourceEl) {
-    var inner = lightbox.querySelector(".ll-lightbox__inner");
-    inner.innerHTML = sourceEl.innerHTML;
+  var lightboxInner = lightbox.querySelector(".ll-lightbox__inner");
+  var lightboxCounter = lightbox.querySelector(".ll-lightbox__counter");
+  var prevBtn = lightbox.querySelector(".ll-lightbox__prev");
+  var nextBtn = lightbox.querySelector(".ll-lightbox__next");
+
+  function renderLightbox() {
+    var el = photoEls[currentIndex];
+    lightboxInner.innerHTML = el.innerHTML;
+    lightboxCounter.textContent = (currentIndex + 1) + " / " + photoEls.length;
+  }
+  function openLightbox(index) {
+    currentIndex = index;
+    renderLightbox();
     lightbox.classList.add("is-open");
     document.body.style.overflow = "hidden";
+    requestAnimationFrame(function () { lightbox.classList.add("is-visible"); });
   }
   function closeLightbox() {
-    lightbox.classList.remove("is-open");
+    lightbox.classList.remove("is-visible");
     document.body.style.overflow = "";
+    setTimeout(function () { lightbox.classList.remove("is-open"); }, 300);
   }
+  function showPrev() {
+    currentIndex = (currentIndex - 1 + photoEls.length) % photoEls.length;
+    renderLightbox();
+  }
+  function showNext() {
+    currentIndex = (currentIndex + 1) % photoEls.length;
+    renderLightbox();
+  }
+
   lightbox.addEventListener("click", function (e) {
     if (e.target === lightbox || e.target.classList.contains("ll-lightbox__close")) {
       closeLightbox();
     }
   });
+  prevBtn.addEventListener("click", showPrev);
+  nextBtn.addEventListener("click", showNext);
   document.addEventListener("keydown", function (e) {
+    if (!lightbox.classList.contains("is-open")) return;
     if (e.key === "Escape") closeLightbox();
+    if (e.key === "ArrowLeft") showPrev();
+    if (e.key === "ArrowRight") showNext();
   });
-  document.querySelectorAll(".ll-photo").forEach(function (el) {
-    el.addEventListener("click", function () { openLightbox(el); });
+  photoEls.forEach(function (el, i) {
+    el.addEventListener("click", function () { openLightbox(i); });
   });
 
   // Footer year
