@@ -45,10 +45,8 @@ cssclasses:
 </nav>
 
 <section id="hero" class="ll-hero reveal">
-  <!-- Swap: replace with full-bleed exterior hero photo (e.g. background-image on .ll-hero, or an <img> behind the overlay) -->
-  <div class="ll-hero__placeholder photo-placeholder" data-label="Hero — Exterior, Twilight">
-    <svg class="ph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16.5 8.5 10l3.5 4 3-4L20 16.5" /><circle cx="12" cy="12" r="9.25" /></svg>
-    <span class="ph-label">Hero — Exterior, Twilight</span>
+  <div class="ll-hero__placeholder">
+    <img src="images/hero-exterior.webp" alt="[ADDRESS] — exterior" loading="eager" />
   </div>
   <div class="ll-hero__scrim"></div>
   <div class="ll-hero__content">
