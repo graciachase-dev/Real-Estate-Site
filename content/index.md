@@ -60,6 +60,13 @@ cssclasses:
   </a>
 </section>
 
+<div class="ll-marquee" aria-hidden="true">
+  <div class="ll-marquee__track">
+    <span>1021 Alegre Ave&ensp;—&ensp;Los Altos, California&ensp;—&ensp;Private Showings by Appointment&ensp;—&ensp;1021 Alegre Ave&ensp;—&ensp;Los Altos, California&ensp;—&ensp;Private Showings by Appointment&ensp;—&ensp;</span>
+    <span>1021 Alegre Ave&ensp;—&ensp;Los Altos, California&ensp;—&ensp;Private Showings by Appointment&ensp;—&ensp;1021 Alegre Ave&ensp;—&ensp;Los Altos, California&ensp;—&ensp;Private Showings by Appointment&ensp;—&ensp;</span>
+  </div>
+</div>
+
 <section id="overview" class="ll-section reveal">
   <div class="ll-container">
     <div class="ll-stats">
@@ -85,7 +92,7 @@ cssclasses:
       </div>
     </div>
     <div class="ll-description">
-      <h2 class="ll-eyebrow-heading">The Property</h2>
+      <h2 class="ll-eyebrow-heading" data-num="01">The Property</h2>
       <!-- Swap: replace this paragraph with real editorial listing copy, roughly 100–150 words -->
       <p>[PLACEHOLDER PARAGRAPH]</p>
     </div>
@@ -94,7 +101,7 @@ cssclasses:
 
 <section id="gallery" class="ll-section ll-section--alt reveal">
   <div class="ll-container">
-    <h2 class="ll-eyebrow-heading">Gallery</h2>
+    <h2 class="ll-eyebrow-heading" data-num="02">Gallery</h2>
     <h3 class="ll-gallery__group-title">Exterior</h3>
     <div class="ll-gallery">
       <button class="photo-placeholder ll-photo" data-label="Exterior — Front Facade" type="button">
@@ -181,9 +188,17 @@ cssclasses:
   </div>
 </section>
 
+<!-- Editorial interstitial — tweak this line to match the listing's story -->
+<section id="statement" class="ll-section ll-section--dark ll-statement reveal">
+  <div class="ll-container">
+    <p class="ll-statement__text">Beneath a canopy of heritage oaks, an address of quiet distinction.</p>
+    <span class="ll-statement__rule"></span>
+  </div>
+</section>
+
 <section id="features" class="ll-section reveal">
   <div class="ll-container">
-    <h2 class="ll-eyebrow-heading">Features &amp; Amenities</h2>
+    <h2 class="ll-eyebrow-heading" data-num="03">Features &amp; Amenities</h2>
     <div class="ll-features">
       <div class="ll-feature">
         <svg class="ll-feature__icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
@@ -231,7 +246,7 @@ cssclasses:
 
 <section id="floorplan" class="ll-section ll-section--alt reveal">
   <div class="ll-container">
-    <h2 class="ll-eyebrow-heading">Floor Plan</h2>
+    <h2 class="ll-eyebrow-heading" data-num="04">Floor Plan</h2>
     <!-- Swap: replace with the actual floor plan image, ideally with labeled rooms -->
     <div class="photo-placeholder ll-floorplan" data-label="Floor Plan — Main Level">
       <svg class="ph-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="1" /><path d="M3 9h18M9 9v12M15 3v6" /></svg>
@@ -241,9 +256,9 @@ cssclasses:
   </div>
 </section>
 
-<section id="tour" class="ll-section reveal">
+<section id="tour" class="ll-section ll-section--dark reveal">
   <div class="ll-container">
-    <h2 class="ll-eyebrow-heading">Virtual Tour</h2>
+    <h2 class="ll-eyebrow-heading" data-num="05">Virtual Tour</h2>
     <!--
       Swap: replace this placeholder with an embedded video or Matterport 3D tour, e.g.:
       <div class="ll-tour__frame">
@@ -259,7 +274,7 @@ cssclasses:
 
 <section id="location" class="ll-section ll-section--alt reveal">
   <div class="ll-container">
-    <h2 class="ll-eyebrow-heading">Location</h2>
+    <h2 class="ll-eyebrow-heading" data-num="06">Location</h2>
     <div class="ll-location">
       <!-- Swap: replace the q= value with the real property address, keep &output=embed (no API key required) -->
       <div class="ll-location__map">
@@ -288,7 +303,7 @@ cssclasses:
 
 <section id="contact" class="ll-section reveal">
   <div class="ll-container ll-container--narrow">
-    <h2 class="ll-eyebrow-heading">Inquire</h2>
+    <h2 class="ll-eyebrow-heading" data-num="07">Inquire</h2>
     <div class="ll-contact">
       <div class="ll-contact__agent">
         <div class="photo-placeholder ll-contact__photo" data-label="Agent Headshot">
@@ -327,6 +342,8 @@ cssclasses:
 
 <footer class="ll-footer">
   <div class="ll-container">
+    <p class="ll-footer__wordmark">1021 Alegre Ave</p>
+    <p class="ll-footer__tagline">Los Altos · California</p>
     <p class="ll-footer__disclaimer">
       [MLS#] · Information deemed reliable but not guaranteed. Square footage, lot size, and other
       details are approximate and should be independently verified. Offered by [BROKERAGE].
@@ -346,6 +363,26 @@ cssclasses:
 <script>
 (function () {
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Cinematic intro curtain — created by JS so it can never trap a
+  // no-JS visitor; a hard fallback removes it after 2.6s no matter what.
+  if (!reducedMotion) {
+    document.body.classList.add("ll-preloading");
+    var preloader = document.createElement("div");
+    preloader.className = "ll-preloader";
+    preloader.innerHTML =
+      '<span class="ll-preloader__eyebrow">Los Altos · California</span>' +
+      '<span class="ll-preloader__title">1021 Alegre Ave</span>' +
+      '<span class="ll-preloader__line"></span>';
+    document.body.appendChild(preloader);
+    setTimeout(function () {
+      preloader.classList.add("is-done");
+      document.body.classList.remove("ll-preloading");
+    }, 1400);
+    setTimeout(function () {
+      if (preloader.parentNode) preloader.parentNode.removeChild(preloader);
+    }, 2600);
+  }
 
   // Sticky nav: transparent over hero, solid once scrolled
   var nav = document.getElementById("site-nav");
@@ -485,6 +522,80 @@ cssclasses:
     }
   }
 
+  // Word-by-word masked heading reveals. Only text nodes are wrapped,
+  // so Quartz's injected anchor-link icons inside headings are untouched.
+  function splitWords(el) {
+    el.classList.add("ll-split");
+    var idx = 0;
+    Array.prototype.slice.call(el.childNodes).forEach(function (node) {
+      if (node.nodeType !== 3 || !node.textContent.trim()) return;
+      var frag = document.createDocumentFragment();
+      node.textContent.split(/(\s+)/).forEach(function (part) {
+        if (!part) return;
+        if (/^\s+$/.test(part)) {
+          frag.appendChild(document.createTextNode(part));
+          return;
+        }
+        var w = document.createElement("span");
+        w.className = "ll-word";
+        var inner = document.createElement("span");
+        inner.className = "ll-word-inner";
+        inner.textContent = part;
+        inner.style.transitionDelay = (idx * 70) + "ms";
+        w.appendChild(inner);
+        frag.appendChild(w);
+        idx++;
+      });
+      el.replaceChild(frag, node);
+    });
+  }
+  if (!reducedMotion && "IntersectionObserver" in window) {
+    var splitTargets = Array.prototype.slice.call(
+      document.querySelectorAll(".ll-eyebrow-heading, .ll-statement__text")
+    );
+    splitTargets.forEach(splitWords);
+    var splitObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-inview");
+            splitObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    splitTargets.forEach(function (el) { splitObserver.observe(el); });
+  }
+
+  // Staggered curtain-wipe reveal for gallery photos. The clip is only
+  // applied once the ll-js class exists, so no-JS visitors always see
+  // photos; after the wipe finishes we drop the clip entirely so hover
+  // shadows and tilt aren't clipped.
+  if (!reducedMotion && "IntersectionObserver" in window) {
+    document.documentElement.classList.add("ll-js");
+    var galleryObserver = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          entry.target.querySelectorAll(".ll-photo").forEach(function (btn, i) {
+            btn.style.setProperty("--reveal-delay", (i * 80) + "ms");
+            btn.classList.add("is-revealed");
+            setTimeout(function () {
+              btn.style.clipPath = "none";
+              btn.style.removeProperty("--reveal-delay");
+            }, i * 80 + 1100);
+          });
+          galleryObserver.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.15 }
+    );
+    document.querySelectorAll(".ll-gallery").forEach(function (g) {
+      galleryObserver.observe(g);
+    });
+  }
+
   // Scroll-triggered fade/slide reveal
   var revealEls = document.querySelectorAll(".reveal");
   if ("IntersectionObserver" in window) {
@@ -568,11 +679,13 @@ cssclasses:
     '<button class="ll-lightbox__nav ll-lightbox__prev" aria-label="Previous photo"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
     '<div class="ll-lightbox__inner"></div>' +
     '<button class="ll-lightbox__nav ll-lightbox__next" aria-label="Next photo"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>' +
+    '<div class="ll-lightbox__caption"></div>' +
     '<div class="ll-lightbox__counter"></div>';
   document.body.appendChild(lightbox);
 
   var lightboxInner = lightbox.querySelector(".ll-lightbox__inner");
   var lightboxCounter = lightbox.querySelector(".ll-lightbox__counter");
+  var lightboxCaption = lightbox.querySelector(".ll-lightbox__caption");
   var prevBtn = lightbox.querySelector(".ll-lightbox__prev");
   var nextBtn = lightbox.querySelector(".ll-lightbox__next");
 
@@ -580,6 +693,8 @@ cssclasses:
     var el = photoEls[currentIndex];
     lightboxInner.innerHTML = el.innerHTML;
     lightboxCounter.textContent = (currentIndex + 1) + " / " + photoEls.length;
+    var img = el.querySelector("img");
+    lightboxCaption.textContent = el.getAttribute("data-label") || (img ? img.alt : "");
   }
   function openLightbox(index) {
     currentIndex = index;
