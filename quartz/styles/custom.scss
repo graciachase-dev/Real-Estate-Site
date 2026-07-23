@@ -165,6 +165,40 @@ body:has(article.luxury-listing) ::selection {
   color: #faf7f2;
 }
 
+// Floating "Inquire" pill — appears once the visitor scrolls past the hero
+.ll-fab {
+  position: fixed;
+  right: 1.6rem;
+  bottom: 1.6rem;
+  z-index: 150;
+  background: #b08d57;
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 0.95rem 1.7rem;
+  border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(43, 38, 34, 0.3);
+  opacity: 0;
+  transform: translateY(16px);
+  pointer-events: none;
+  transition:
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.3s ease;
+
+  &.is-shown {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  &:hover {
+    background: #2b2622;
+  }
+}
+
 // Subtle film-grain texture for a tactile, editorial-print feel.
 body:has(article.luxury-listing)::after {
   content: "";
@@ -458,6 +492,7 @@ article.luxury-listing {
     overflow: hidden;
     opacity: 1;
     transform: none;
+    perspective: 1000px;
 
     .ll-hero__placeholder {
       position: absolute;
@@ -668,6 +703,7 @@ article.luxury-listing {
   button.photo-placeholder {
     appearance: none;
     overflow: hidden;
+    position: relative;
     transition:
       transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
       box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
@@ -677,6 +713,22 @@ article.luxury-listing {
       transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
+    // Light glare that tracks the cursor while the card tilts —
+    // --gx/--gy are written by the tilt handler in the page script.
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        circle at var(--gx, 50%) var(--gy, 50%),
+        rgba(255, 255, 255, 0.22),
+        transparent 62%
+      );
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      pointer-events: none;
+    }
+
     &:hover {
       transform: translateY(-3px);
       border-color: var(--ll-gold);
@@ -684,6 +736,10 @@ article.luxury-listing {
 
       img {
         transform: scale(1.07);
+      }
+
+      &::after {
+        opacity: 1;
       }
     }
   }
@@ -796,9 +852,30 @@ article.luxury-listing {
     box-shadow: 0 2px 14px rgba(43, 38, 34, 0.06);
     transition: box-shadow 0.4s ease;
     will-change: transform;
+    position: relative;
+    overflow: hidden;
+
+    // Gold-tinted glare tracking the cursor during tilt
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        circle at var(--gx, 50%) var(--gy, 50%),
+        rgba(176, 141, 87, 0.12),
+        transparent 65%
+      );
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      pointer-events: none;
+    }
 
     &:hover {
       box-shadow: 0 22px 44px rgba(43, 38, 34, 0.13);
+
+      &::after {
+        opacity: 1;
+      }
     }
 
     h3 {
@@ -867,6 +944,69 @@ article.luxury-listing {
     height: 1px;
     background: var(--ll-gold);
     margin: 2.2rem auto 0;
+  }
+
+  // ---------- 3D perspective entrances ----------
+  // Statement text, floor plan, and tour frame rise off the page in
+  // perspective as their section scrolls into view.
+  .ll-statement .ll-container,
+  #floorplan .ll-floorplan,
+  #tour .ll-tour__frame {
+    transform: perspective(900px) rotateX(9deg) translateY(34px);
+    transform-origin: center bottom;
+    opacity: 0;
+    transition:
+      transform 1.15s cubic-bezier(0.22, 1, 0.36, 1) 0.1s,
+      opacity 1.15s ease 0.1s;
+  }
+  .ll-statement.is-visible .ll-container,
+  #floorplan.is-visible .ll-floorplan,
+  #tour.is-visible .ll-tour__frame {
+    transform: none;
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ll-statement .ll-container,
+    #floorplan .ll-floorplan,
+    #tour .ll-tour__frame {
+      transform: none;
+      opacity: 1;
+    }
+  }
+
+  // ---------- pre-contact CTA band ----------
+  .ll-cta {
+    text-align: center;
+  }
+  .ll-cta__eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    font-size: 0.7rem;
+    color: #c9a46a;
+    margin: 0 0 1.2rem;
+  }
+  .ll-cta__title {
+    font-family: var(--headerFont);
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 500;
+    color: #f5f0e6;
+    margin: 0 0 2.4rem;
+    line-height: 1.25;
+  }
+  a.ll-btn {
+    display: inline-block;
+    text-decoration: none;
+  }
+  .ll-btn--ghost {
+    background: transparent;
+    border-color: var(--ll-gold);
+    color: #f0e6d2;
+
+    &:hover {
+      background: var(--ll-gold);
+      border-color: var(--ll-gold);
+      color: #fff;
+    }
   }
 
   // ---------- floor plan ----------

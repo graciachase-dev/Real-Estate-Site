@@ -30,6 +30,8 @@ cssclasses:
   ============================================================
 -->
 
+<noscript><style>.reveal{opacity:1 !important;transform:none !important}.ll-statement .ll-container,#floorplan .ll-floorplan,#tour .ll-tour__frame{opacity:1 !important;transform:none !important}</style></noscript>
+
 <nav id="site-nav" class="ll-nav">
   <a href="#hero" class="ll-nav__brand">1021 Alegre Ave</a>
   <button id="navToggle" class="ll-nav__toggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -272,6 +274,14 @@ cssclasses:
   </div>
 </section>
 
+<section id="cta" class="ll-section ll-section--dark ll-cta reveal">
+  <div class="ll-container">
+    <p class="ll-cta__eyebrow">Private Showings</p>
+    <h2 class="ll-cta__title">Experience 1021 Alegre Ave in person</h2>
+    <a href="#contact" class="ll-btn ll-btn--ghost">Schedule a Private Showing</a>
+  </div>
+</section>
+
 <section id="location" class="ll-section ll-section--alt reveal">
   <div class="ll-container">
     <h2 class="ll-eyebrow-heading" data-num="06">Location</h2>
@@ -384,6 +394,13 @@ cssclasses:
     }, 2600);
   }
 
+  // Floating "Inquire" pill — revealed alongside the solid nav state
+  var fab = document.createElement("a");
+  fab.className = "ll-fab";
+  fab.href = "#contact";
+  fab.textContent = "Inquire";
+  document.body.appendChild(fab);
+
   // Sticky nav: transparent over hero, solid once scrolled
   var nav = document.getElementById("site-nav");
   var hero = document.getElementById("hero");
@@ -392,8 +409,10 @@ cssclasses:
     var threshold = hero.offsetHeight * 0.7;
     if (window.scrollY > threshold) {
       nav.classList.add("is-solid");
+      fab.classList.add("is-shown");
     } else {
       nav.classList.remove("is-solid");
+      fab.classList.remove("is-shown");
     }
   }
 
@@ -408,17 +427,42 @@ cssclasses:
     progress.style.width = pct + "%";
   }
 
-  // Hero parallax — image and text move at different rates so the
-  // scene reads as layered/three-dimensional rather than a flat scroll.
+  // Hero 3D scene — scroll parallax and cursor position compose into one
+  // transform per layer: the image drifts opposite the cursor while the
+  // text block rotates subtly in perspective, so the hero reads as a
+  // dimensional scene rather than a flat photo.
   var heroImg = hero ? hero.querySelector(".ll-hero__placeholder img") : null;
   var heroContent = hero ? hero.querySelector(".ll-hero__content") : null;
   var heroCue = hero ? hero.querySelector(".ll-hero__scroll-cue") : null;
+  var heroMx = 0;
+  var heroMy = 0;
   function updateParallax() {
     if (reducedMotion) return;
     var y = window.scrollY;
-    if (heroImg) heroImg.style.transform = "translateY(" + Math.min(y * 0.3, 160) + "px)";
-    if (heroContent) heroContent.style.transform = "translateY(" + Math.min(y * 0.14, 70) + "px)";
+    if (heroImg) {
+      heroImg.style.transform =
+        "translateY(" + Math.min(y * 0.3, 160) + "px) translate3d(" +
+        (heroMx * -14) + "px, " + (heroMy * -10) + "px, 0) scale(1.05)";
+    }
+    if (heroContent) {
+      heroContent.style.transform =
+        "translateY(" + Math.min(y * 0.14, 70) + "px) rotateX(" +
+        (-heroMy * 3) + "deg) rotateY(" + (heroMx * 3) + "deg)";
+    }
     if (heroCue) heroCue.style.opacity = Math.max(1 - y / 220, 0);
+  }
+  if (hero && window.matchMedia("(pointer: fine)").matches && !reducedMotion) {
+    hero.addEventListener("mousemove", function (e) {
+      var rect = hero.getBoundingClientRect();
+      heroMx = (e.clientX - rect.left) / rect.width - 0.5;
+      heroMy = (e.clientY - rect.top) / rect.height - 0.5;
+      updateParallax();
+    });
+    hero.addEventListener("mouseleave", function () {
+      heroMx = 0;
+      heroMy = 0;
+      updateParallax();
+    });
   }
 
   var ticking = false;
@@ -488,6 +532,8 @@ cssclasses:
         el.style.transform =
           "perspective(800px) rotateX(" + (-py * maxTilt) + "deg) rotateY(" +
           (px * maxTilt) + "deg) translateY(-" + lift + "px) scale(1.02)";
+        el.style.setProperty("--gx", ((px + 0.5) * 100) + "%");
+        el.style.setProperty("--gy", ((py + 0.5) * 100) + "%");
       });
       el.addEventListener("mouseleave", function () {
         el.style.transform = "";
